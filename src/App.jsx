@@ -5,7 +5,6 @@ const Search = ({ onSearch }) => (
   <div className="search-container">
     <input
       type="text"
-      id="search"
       placeholder="Search products..."
       onChange={(e) => onSearch(e.target.value)}
     />
@@ -27,7 +26,7 @@ const ProductCard = ({ product, onToggleLike, onDelete }) => (
   </div>
 );
 
-const AddProductForm = ({ onSubmit, onCancel }) => {
+const AddProductForm = ({ onSubmit }) => {
   const [name, setName] = useState('');
   const [img, setImg] = useState('');
   const [info, setInfo] = useState('');
@@ -46,7 +45,7 @@ const AddProductForm = ({ onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="add-product-form">
+    <div className="sidebar">
       <h3>Add New Product</h3>
       <input
         type="text"
@@ -56,7 +55,7 @@ const AddProductForm = ({ onSubmit, onCancel }) => {
       />
       <input
         type="text"
-        placeholder="Product Image URL"
+        placeholder="Image URL"
         value={img}
         onChange={(e) => setImg(e.target.value)}
       />
@@ -68,12 +67,11 @@ const AddProductForm = ({ onSubmit, onCancel }) => {
       />
       <input
         type="number"
-        placeholder="Product Price"
+        placeholder="Price"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
       />
       <button onClick={handleSubmit}>Submit</button>
-      <button onClick={onCancel}>Cancel</button>
     </div>
   );
 };
@@ -81,9 +79,9 @@ const AddProductForm = ({ onSubmit, onCancel }) => {
 const App = () => {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isFormVisible, setFormVisible] = useState(false);
 
-  useEffect(() => {const storedProducts = JSON.parse(localStorage.getItem('products')) || [];
+  useEffect(() => {
+    const storedProducts = JSON.parse(localStorage.getItem('products')) || [];
     setProducts(storedProducts);
   }, []);
 
@@ -91,20 +89,19 @@ const App = () => {
     localStorage.setItem('products', JSON.stringify(products));
   }, [products]);
 
-  const toggleLike = (productId) => {
+  const toggleLike = (id) => {
     setProducts((prev) =>
-      prev.map((p) => (p.id === productId ? { ...p, liked: !p.liked } : p))
+      prev.map((p) => (p.id === id ? { ...p, liked: !p.liked } : p))
     );
   };
 
-  const deleteProduct = (productId) => {
-    setProducts((prev) => prev.filter((p) => p.id !== productId));
+  const deleteProduct = (id) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
   const addProduct = (product) => {
     const newProduct = { ...product, id: Date.now().toString(), liked: false };
     setProducts((prev) => [...prev, newProduct]);
-    setFormVisible(false);
   };
 
   const filteredProducts = products.filter((product) =>
@@ -112,30 +109,23 @@ const App = () => {
   );
 
   return (
-    <div>
-      <Search onSearch={setSearchTerm} />
-      <div className="products-container">
-        {filteredProducts.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onToggleLike={toggleLike}
-            onDelete={deleteProduct}
-          />
-        ))}
+    <div className="app">
+      <AddProductForm onSubmit={addProduct} />
+      <div className="content">
+        <Search onSearch={setSearchTerm} />
+        <div className="products-container">
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onToggleLike={toggleLike}
+              onDelete={deleteProduct}
+            />
+          ))}
+        </div>
       </div>
-      {isFormVisible && (
-        <AddProductForm
-        onSubmit={addProduct}
-        onCancel={() => setFormVisible(false)}
-      />
-    )}
-    <button onClick={() => setFormVisible(true)} style={{ marginTop: '20px' }}>
-      Add Product
-    </button>
-  </div>
-);
+    </div>
+  );
 };
 
 export default App;
-
